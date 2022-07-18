@@ -2,28 +2,30 @@ from requests import get
 from bs4 import BeautifulSoup
 import os
 import pandas as pd
+import requests 
 
 
 #######################################################
 # This file is for the acquire exercises for NLP codeup module.
 #######################################################
 
-def get_blog_posts(use_cache=True):
-    if os.path.exists('codeup_blog_articles.json') and use_cache:
-        return pd.read_json('codeup_blog_articles.json')
-
-    urls = get_blog_article_urls()
-    articles = []
-
-    for url in urls:
-        print(f'fetching {url}')
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text)
-        articles.append(parse_blog_article(soup))
-
-    df = pd.DataFrame(articles)
-    df.to_json('codeup_blog_articles.json', orient='records')
-    return df
+def get_blog_articles(url):
+    """this function pulls codeup blog urls and reassigns the tile and content of the blog
+    into a dicitionary"""
+    url = url
+    #establishing a header for access:
+    headers = {'User-Agent': 'Codeup Data Science Student'} 
+    response = get(url, headers=headers)
+    
+    # Make a soup variable holding the response content
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    #creating the dictionary
+    output = {}
+    output['title'] = soup.find('h1', class_='entry-title').text
+    output['content'] = soup.find('div', class_='entry-content').text.strip().replace('\n',' ')
+    
+    return output
 
 def parse_news_article(article, category):
     """this function pulls inshorts news articles and reassigns the tile and content of the articles
