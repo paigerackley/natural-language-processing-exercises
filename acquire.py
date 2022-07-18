@@ -8,7 +8,7 @@ import pandas as pd
 # This file is for the acquire exercises for NLP codeup module.
 #######################################################
 
-def get_blog_articles(url):
+def get_blog_posts(url):
     """this function pulls codeup blog urls and reassigns the tile and content of the blog
     into a dicitionary"""
     url = url
