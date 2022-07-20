@@ -8,23 +8,25 @@ from nltk.corpus import stopwords
 
 import pandas as pd
 
-import acquire
-
-import warnings
-warnings.filterwarnings('ignore')
-
-
-
 def basic_clean(string):
-    '''
-    This function takes in a string and
-    returns the string normalized.
-    '''
-    string = unicodedata.normalize('NFKD', string)\
-             .encode('ascii', 'ignore')\
-             .decode('utf-8', 'ignore')
-    string = re.sub(r'[^\w\s]', '', string).lower()
+    
+    # lowercase everything
+    string = string.lower()
+    
+    # remove inconsistenceis
+    # encode into ascii byte strings
+    # decode back into UTF-8
+    # (This process will normalize the unicode characters)
+    
+    string = unicodedata.normalize('NFKD', string).encode('ascii', 'ignore').decode('UTF-8')
+    
+    # replace anything that is not a letter, number, whitespace, etc
+    # use regex to perform this operation
+    string = re.sub(r"[^a-z0-9\s]", '', string)
+    
     return string
+
+
 
 def tokenize(string):
     """
@@ -37,56 +39,68 @@ def tokenize(string):
     
     #Use the token
     string = token.tokenize(string,  return_str=True)
-
+    
+    return string
 
 def stem(string):
+    """
+    This function will accept some text(string) and return a stemmed 
+    version of the text
+    """
+    
+    #create the porter stem
     ps = nltk.porter.PorterStemmer()
-    # Use the stemmer to stem each word in the list of words we created by using split.
-    stems = [ps.stem(word) for word in string.split()]
-    # Join our lists of words into a string again and assign to a variable.
-    string = ' '.join(stems)
-    return string
-
-
+    
+    #Apply the stem to each work in the string and create a list
+    # of steemed words
+    
+    stem = [ps.stem(word) for word in string.split()]
+    
+    # rejoin the string together
+    stemmed_string = ' '.join(stem)
+    
+    return stemmed_string
 
 def lemmatize(string):
+    """This function takes in a string and returns a lmeeatized 
+    version of the string"""
+    
+    # create the lemmatizer
     wnl = nltk.stem.WordNetLemmatizer()
-    # Use the lemmatizer on each word in the list of words we created by using split.
+    
     lemmas = [wnl.lemmatize(word) for word in string.split()]
-    # Join our list of words into a string again and assign to a variable.
-    string = ' '.join(lemmas)
-    return string
+    
+    string_lemmatize = ' '.join(lemmas)
+    
+    return string_lemmatize
 
 
-def remove_stopwords(string, extra_words = [], exclude_words = []):
-        stopword_list = stopwords.words('english')
-        # Remove 'exclude_words' from stopword_list to keep these in my text.
-        stopword_list = set(stopword_list) - set(exclude_words)
-        # Add in 'extra_words' to stopword_list.
-        stopword_list = stopword_list.union(set(extra_words))
-        # Split words in string.
-        words = string.split()
-        # Create a list of words from my string with stopwords removed and assign to variable.
-        filtered_words = [word for word in words if word not in stopword_list]
-        # Join words in the list back into strings and assign to a variable.
-        string_without_stopwords = ' '.join(filtered_words)
-        return string_without_stopwords
+def remove_stopwords(string, extra_words=[], exclude_words=[]):
+    
+    #get english stopwords from nltk
+    stop_words = stopwords.words('english')
+    
+    #Add extra words to be removed to the stop word list
+    for word in extra_words:
+        stop_words.append(word)
+    
+    #Remove words to be excluded from the stop word list
+    for word in exclude_words:
+        stop_words.remove(word)
+    
+    #Create a list of words to be checked by splitting the string
+    words = string.split()
+    
+    #Filter out all of the stop words
+    filtered_words = [word for word in words if word not in stop_words]
+    
+    #Join the list of filtered words into a string
+    filtered_string = ' '.join(filtered_words)
+    
+    return filtered_string
 
-
-
-
-## FINAL PREPARE ##
-
-
-
-#creating function of above needed items:
 def prep_article_data(df, column, extra_words=[], exclude_words=[]):
-    '''
-    This function takes in a df and the string name for a text column with the
-    option to pass lists for extra_words and exclude_words and
-    returns a df with the text article title, original text, stemmed text,
-    lemmatized text, cleaned, tokenized, & lemmatized text with stopwords removed.
-    '''
+
     df['clean'] = df[column].apply(basic_clean)\
                             .apply(tokenize)\
                             .apply(remove_stopwords,
