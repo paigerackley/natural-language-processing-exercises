@@ -8,6 +8,8 @@ from nltk.corpus import stopwords
 
 import pandas as pd
 
+import acquire
+
 def basic_clean(string):
     
     # lowercase everything
@@ -99,20 +101,37 @@ def remove_stopwords(string, extra_words=[], exclude_words=[]):
     
     return filtered_string
 
-def prep_article_data(df, column, extra_words=[], exclude_words=[]):
 
-    df['clean'] = df[column].apply(basic_clean)\
-                            .apply(tokenize)\
-                            .apply(remove_stopwords,
-                                  extra_words=extra_words,
-                                  exclude_words=exclude_words)
-    
-    df['stemmed'] = df['clean'].apply(stem)
-    
-    df['lemmatized'] = df['clean'].apply(lemmatize)
-    
-    return df[['title', column,'clean', 'stemmed', 'lemmatized']]
 
+
+#################################################################################
+
+
+def news_df_prepare():
+    news_df = acquire.get_all_inshorts_articles()
+    news_df.drop(columns = 'category', inplace=True)
+    news_df.rename({'content':'original'}, axis=1, inplace=True)
+    news_df['clean'] = news_df.original.apply(basic_clean)
+    news_df['clean'] = news_df.clean.apply(tokenize)
+    news_df['clean'] = news_df.clean.apply(remove_stopwords)
+    news_df['stemmed'] = news_df.clean.apply(stem)
+    news_df['lemmatized'] = news_df.clean.apply(lemmatize)
+    return news_df
+
+
+def codeup_df_prepare():
+    codeup_df = acquire.get_all_codeup_blogs()
+    codeup_df.drop(columns= ['date','link'], inplace=True)
+    codeup_df.rename({'content':'original'}, axis=1, inplace=True)
+    codeup_df['clean'] = codeup_df.original.apply(basic_clean)
+    codeup_df['clean'] = codeup_df.clean.apply(tokenize)
+    codeup_df['clean'] = codeup_df.clean.apply(remove_stopwords)
+    codeup_df['stemmed'] = codeup_df.clean.apply(stem)
+    codeup_df['lemmatized'] = codeup_df.clean.apply(lemmatize)
+    return codeup_df
+
+
+##############################################################################
 
 def prep_text(df, column, extra_words=[], exclude_words=[]):
     
