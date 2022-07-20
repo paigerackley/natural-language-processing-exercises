@@ -26,6 +26,19 @@ def basic_clean(string):
     string = re.sub(r'[^\w\s]', '', string).lower()
     return string
 
+def tokenize(string):
+    """
+    This function will take in a string, tokenize the string and 
+    return the tokenize string
+    """
+    
+    #create the token
+    token = nltk.tokenize.ToktokTokenizer()
+    
+    #Use the token
+    string = token.tokenize(string,  return_str=True)
+
+
 def stem(string):
     ps = nltk.porter.PorterStemmer()
     # Use the stemmer to stem each word in the list of words we created by using split.
@@ -85,3 +98,18 @@ def prep_article_data(df, column, extra_words=[], exclude_words=[]):
     df['lemmatized'] = df['clean'].apply(lemmatize)
     
     return df[['title', column,'clean', 'stemmed', 'lemmatized']]
+
+
+def prep_text(df, column, extra_words=[], exclude_words=[]):
+    
+    df['clean'] = df[column].apply(basic_clean)\
+                            .apply(tokenize)\
+                            .apply(remove_stopwords,
+                                  extra_words=extra_words,
+                                  exclude_words=exclude_words)
+    
+    df['stemmed'] = df['clean'].apply(stem)
+    
+    df['lemmatized'] = df['clean'].apply(lemmatize)
+    
+    return df[['label', column,'clean', 'stemmed', 'lemmatized']]
